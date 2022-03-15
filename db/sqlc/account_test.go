@@ -91,3 +91,27 @@ func TestDeleteAccount(t *testing.T) {
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, account2)
 }
+
+//测试获取列表
+func TestListAccounts(t *testing.T) {
+	var lastAccount Account
+	//生成多个账号
+	for i := 0; i < 10; i++ {
+		lastAccount = createRandomAccount(t)
+	}
+	arg := ListAccountsParams{
+		Owner:  lastAccount.Owner,
+		Limit:  5, //只显示5个
+		Offset: 0, //跳过前面0个
+	}
+	accounts, err := testQueries.ListAccounts(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, accounts)
+
+	for _, account := range accounts {
+
+		require.NotEmpty(t, account)
+		require.Equal(t, lastAccount.Owner, account.Owner)
+	}
+
+}

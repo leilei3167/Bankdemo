@@ -37,7 +37,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 
 const deleteAccounts = `-- name: DeleteAccounts :exec
 delete from accounts
-where id=$1
+where "id"=$1
 `
 
 func (q *Queries) DeleteAccounts(ctx context.Context, id int64) error {
@@ -64,19 +64,21 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 }
 
 const listAccounts = `-- name: ListAccounts :many
-select id, owner, balance, currency, create_atfrom accounts
-order by id
-limit $1
-offset $2
+SELECT id, owner, balance, currency, create_at FROM accounts
+WHERE owner = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
 `
 
 type ListAccountsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Owner  string `json:"owner"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Owner, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +108,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 
 const upadateAccount = `-- name: UpadateAccount :one
 update accounts set balance=$2
-where id=$1 returning id, owner, balance, currency, create_at
+where "id"=$1 returning id, owner, balance, currency, create_at
 `
 
 type UpadateAccountParams struct {

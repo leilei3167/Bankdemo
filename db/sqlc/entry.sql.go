@@ -34,7 +34,7 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry
 
 const getEntry = `-- name: GetEntry :one
 select id, account_id, amount, create_atfrom entries
-where id=$1 limit 1
+where "id"=$1 limit 1
 `
 
 func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {

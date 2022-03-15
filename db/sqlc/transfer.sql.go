@@ -37,7 +37,7 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 
 const getTransfer = `-- name: GetTransfer :one
 SELECT id, from_account_id, to_account_id, amount, create_at FROM transfers
-WHERE id = $1 LIMIT 1
+WHERE "id" = $1 LIMIT 1
 `
 
 func (q *Queries) GetTransfer(ctx context.Context, id sql.NullInt64) (Transfer, error) {

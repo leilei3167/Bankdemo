@@ -11,10 +11,11 @@ select * from accounts
 where "id" =$1 limit 1;
 
 -- name: ListAccounts :many
-select *from accounts
-order by "id"
-limit $1
-offset $2;
+SELECT * FROM accounts
+WHERE owner = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3;
 
 -- name: UpadateAccount :one
 update accounts set balance=$2
