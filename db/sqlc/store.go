@@ -50,9 +50,9 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
 //z转账相关的结构体
 type TransferTxParams struct {
-	FromAccountID sql.NullInt64 `json:"from_account_id"`
-	ToAccountID   sql.NullInt64 `json:"to_account_id"`
-	Amount        int64         `json:"amount"`
+	FromAccountID int64 `json:"from_account_id"`
+	ToAccountID   int64 `json:"to_account_id"`
+	Amount        int64 `json:"amount"`
 }
 
 //转账的结果,要求转账的记录的表,转出和接收方的账户表,转出和接收的记录表

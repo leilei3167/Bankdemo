@@ -31,7 +31,7 @@ func createRandomAccount(t *testing.T) Account {
 
 	//检查数据库是否自动生成字段
 	require.NotZero(t, account.ID)
-	require.NotZero(t, account.CreateAt)
+	require.NotZero(t, account.CreatedAt)
 	return account
 }
 
@@ -53,7 +53,7 @@ func TestGetAccount(t *testing.T) {
 	require.Equal(t, account1.Balance, account2.Balance)
 	require.Equal(t, account1.Currency, account2.Currency)
 	//对于时间戳
-	require.WithinDuration(t, account1.CreateAt, account2.CreateAt, time.Second)
+	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
 }
 
 //测试更新
@@ -74,7 +74,7 @@ func TestUpdateAccounts(t *testing.T) {
 	require.Equal(t, arg.Balance, account2.Balance)
 	require.Equal(t, account1.Currency, account2.Currency)
 	//对于时间戳
-	require.WithinDuration(t, account1.CreateAt, account2.CreateAt, time.Second)
+	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)
 
 }
 

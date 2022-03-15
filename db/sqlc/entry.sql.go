@@ -5,19 +5,18 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createEntry = `-- name: CreateEntry :one
 insert into entries(
     account_id,
     amount
-)values($1,$2)returning id, account_id, amount, create_at
+)values($1,$2)returning id, account_id, amount, created_at
 `
 
 type CreateEntryParams struct {
-	AccountID sql.NullInt64 `json:"account_id"`
-	Amount    int64         `json:"amount"`
+	AccountID int64 `json:"account_id"`
+	Amount    int64 `json:"amount"`
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
@@ -27,13 +26,13 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry
 		&i.ID,
 		&i.AccountID,
 		&i.Amount,
-		&i.CreateAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getEntry = `-- name: GetEntry :one
-select id, account_id, amount, create_atfrom entries
+select id, account_id, amount, created_atfrom entries
 where "id"=$1 limit 1
 `
 
@@ -44,22 +43,22 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
 		&i.ID,
 		&i.AccountID,
 		&i.Amount,
-		&i.CreateAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listEntry = `-- name: ListEntry :many
-select id, account_id, amount, create_at from entries
+select id, account_id, amount, created_at from entries
 where account_id=$1
 order by id
 limit $2 offset $3
 `
 
 type ListEntryParams struct {
-	AccountID sql.NullInt64 `json:"account_id"`
-	Limit     int32         `json:"limit"`
-	Offset    int32         `json:"offset"`
+	AccountID int64 `json:"account_id"`
+	Limit     int32 `json:"limit"`
+	Offset    int32 `json:"offset"`
 }
 
 func (q *Queries) ListEntry(ctx context.Context, arg ListEntryParams) ([]Entry, error) {
@@ -75,7 +74,7 @@ func (q *Queries) ListEntry(ctx context.Context, arg ListEntryParams) ([]Entry, 
 			&i.ID,
 			&i.AccountID,
 			&i.Amount,
-			&i.CreateAt,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
