@@ -1,0 +1,17 @@
+version: 1
+packages:
+  - path: "./db/sqlc"
+    name: "db"
+    engine: "postgresql"
+    # 迁移文件的路径
+    schema: "./db/migration/"
+    # 查询的路径
+    queries: "./db/query"
+    #添加json tag
+    emit_json_tags: true
+
+    emit_interface: false
+     #为true则为表设置负数名的结构体
+    emit_exact_table_names: false
+   
+    # 跟多选项 https://docs.sqlc.dev/en/stable/reference/config.html
