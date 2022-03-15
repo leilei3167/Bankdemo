@@ -16,14 +16,16 @@ const (
 )
 
 var testQueries *Queries
+var testDB *sql.DB //全局db 方便其他测试函数使用
 
 //整个包的测试主入口
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	var err error
+	testDB, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("无法链接到数据库:", err)
 	}
 	//拿到conn后创建Queries实例,
-	testQueries = New(conn)
+	testQueries = New(testDB)
 	os.Exit(m.Run())
 }

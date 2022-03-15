@@ -70,11 +70,13 @@ type TransferTxResult struct {
 func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	//创建一个空的结果
 	var result TransferTxResult
-
 	//调用
 	err := store.execTx(ctx, func(q *Queries) error {
-		//用Queries调用创建转账记录的方法,并将结果写入result transfer字段
+		//fn之内为多个语句的组合,任意一个失败都返回err到execTx,并且回滚
+
+		//1.用Queries调用创建转账记录的方法,并将结果写入result transfer字段
 		var err error
+		//引用外部函数变量result,构成闭包
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -83,6 +85,25 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
+		//2.转出转入的双方的Account表
+		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.FromAccountID,
+			Amount:    -arg.Amount, //对于转出账户来讲,是负数
+
+		})
+		if err != nil {
+			return err
+		}
+		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.ToAccountID,
+			Amount:    arg.Amount, //收入账户为正
+		})
+		if err != nil {
+			return err
+		}
+		//3.更新balance,要考虑加锁和防止死锁
+
+
 		//暂时return nil
 		return nil
 	})
