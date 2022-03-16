@@ -11,6 +11,28 @@ jobs:
   build:
     name: Test
     runs-on: ubuntu-latest
+
+ # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: 8888
+          POSTGRES_USER: root
+          POSTGRES_DB: simple_bank
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+ ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
     steps:
     - uses: actions/checkout@v2
 
@@ -18,6 +40,18 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.17
+
+    steps:
+      - name: Install Migrations
+      run: |
+         curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
+         sudo mv migrate.linux-amd64 /usr/bin/migrate
+          which migrate
+
+      - name: Run migrate
+      run: migrate -path db/migration -database "postgresql://root:8888@localhost:5432/simple_bank?sslmode=disable" -verbose up
+
+
 
     - name: Test
       run: go test -v ./...
