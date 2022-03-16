@@ -107,41 +107,52 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
-		//3.更新balance,要考虑加锁和防止死锁
-		//一般来讲,应在Account表中查询到需要修改的账户id,然后对其balance字段进行修改,然后如果不加锁,将会出现问题
-		//先查询获取余额
-		/* 	fmt.Println(txName,"查询account1")
-		account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
-		if err != nil {
-			return err
-		} */
-		//再修改
-		fmt.Println(txName, "修改account1的余额")
-		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.FromAccountID,
-			Amount: -arg.Amount,
-		})
-		if err != nil {
-			return err
-		}
-		/* 	fmt.Println(txName,"查询account2")
-		account2, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
-		if err != nil {
-			return err
-		} */
-		//再修改
-		fmt.Println(txName, "修改account2的余额")
-		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
-			ID:     arg.ToAccountID,
-			Amount: arg.Amount,
-		})
-		if err != nil {
-			return err
-		}
 
+		if arg.FromAccountID < arg.ToAccountID { //确保多个事务都按照相同的顺序执行修改
+			//先修改转出方
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount,
+				arg.ToAccountID, arg.Amount)
+
+		} else { //否则就先修改转入方
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount,
+				arg.FromAccountID, -arg.Amount)
+
+		}
 		//暂时return nil
 		return nil
 	})
 
 	return result, err
+}
+
+//为精简代码而将其封装为函数
+func addMoney(
+	ctx context.Context,
+	q *Queries,
+
+	accountID1 int64,
+	amount1 int64, //应该添加到第一个账户的金额
+	accountID2 int64,
+	amount2 int64, //应该添加到第2个账户的金额
+	//返回修改后的两个账户和一个潜在的错误
+) (account1 Account, account2 Account, err error) {
+
+	account1, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     accountID1,
+		Amount: amount1,
+	})
+	if err != nil {
+		return
+	}
+
+	account2, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+		ID:     accountID2,
+		Amount: amount2,
+	})
+	if err != nil {
+		return
+	}
+
+	return
+
 }

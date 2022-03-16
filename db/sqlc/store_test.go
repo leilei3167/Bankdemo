@@ -119,3 +119,57 @@ func TestTransferTx(t *testing.T) {
 	require.Equal(t, account2.Balance+int64(n)*amount, upadateAccount2.Balance)
 
 }
+
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
+	//生成2个随机的账户来转账
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
+
+	n := 10
+	amount := int64(10)
+	errs := make(chan error)
+	fmt.Println(">>>转账之前:", account1.Balance, account2.Balance)
+
+	for i := 0; i < n; i++ {
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
+
+		if i%2 == 1 {//奇数时从账户2转账到账户1
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
+		}
+
+		txName := fmt.Sprintf("tx %d", i+1)
+		go func() {
+			ctx := context.WithValue(context.Background(), txKey, txName)
+			_, err := store.TransferTx(ctx, TransferTxParams{
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
+				Amount:        amount, //每次转账10块
+			})
+			//将错误发送到主协程
+			errs <- err
+		}()
+
+	}
+
+	//在外部进行检查
+
+	for i := 0; i < n; i++ {
+		err := <-errs
+		require.NoError(t, err)
+
+	}
+	//转账结束后检查两个账户的余额,因为都转入转出相同的5笔,所以转出后余额和转出前余额应相等
+	upadateAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
+	require.NoError(t, err)
+	require.Equal(t, account1.Balance, upadateAccount1.Balance)
+
+	upadateAccount2, err := testQueries.GetAccount(context.Background(), account2.ID)
+	fmt.Println(">>>所有转账之后:", upadateAccount1.Balance, upadateAccount2.Balance)
+
+	require.NoError(t, err)
+	require.Equal(t, account2.Balance, upadateAccount2.Balance)
+
+}
