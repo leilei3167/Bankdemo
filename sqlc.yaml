@@ -13,5 +13,5 @@ packages:
     emit_interface: false
      #为true则为表设置负数名的结构体
     emit_exact_table_names: false
-   
+    emit_empty_slices: true
     # 跟多选项 https://docs.sqlc.dev/en/stable/reference/config.html
