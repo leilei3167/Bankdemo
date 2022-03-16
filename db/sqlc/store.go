@@ -64,6 +64,8 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
+var txKey = struct{}{}
+
 //写一个转账的处理,需要传入转账的参数结构体,返回结果结构体
 //创建转账记录,添加account entries,更新account的balance
 
@@ -76,6 +78,8 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 
 		//1.用Queries调用创建转账记录的方法,并将结果写入result transfer字段
 		var err error
+		txName := ctx.Value(txKey)
+		fmt.Println(txName, "创建Transfer")
 		//引用外部函数变量result,构成闭包
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
@@ -86,6 +90,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 		//2.转出转入的双方的Account表
+		fmt.Println(txName, "创建Entry1")
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount:    -arg.Amount, //对于转出账户来讲,是负数
@@ -94,6 +99,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
+		fmt.Println(txName, "创建Entry2")
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount, //收入账户为正
@@ -102,7 +108,36 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 			return err
 		}
 		//3.更新balance,要考虑加锁和防止死锁
-
+		//一般来讲,应在Account表中查询到需要修改的账户id,然后对其balance字段进行修改,然后如果不加锁,将会出现问题
+		//先查询获取余额
+		/* 	fmt.Println(txName,"查询account1")
+		account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		} */
+		//再修改
+		fmt.Println(txName, "修改account1的余额")
+		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.FromAccountID,
+			Amount: -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+		/* 	fmt.Println(txName,"查询account2")
+		account2, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
+		if err != nil {
+			return err
+		} */
+		//再修改
+		fmt.Println(txName, "修改account2的余额")
+		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:     arg.ToAccountID,
+			Amount: arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
 		//暂时return nil
 		return nil
