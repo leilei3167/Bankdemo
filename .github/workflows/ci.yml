@@ -41,14 +41,13 @@ jobs:
       with:
         go-version: 1.17
 
-    steps:
-      - name: Install Migrations
+    - name: Install go-migrate
       run: |
          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
          sudo mv migrate.linux-amd64 /usr/bin/migrate
           which migrate
 
-      - name: Run migrate
+    - name: Run migrate
       run: migrate -path db/migration -database "postgresql://root:8888@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
 
