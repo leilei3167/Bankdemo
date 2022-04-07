@@ -27,7 +27,7 @@ func createRandomEntry(t *testing.T, account Account) Entry {
 	return entry
 }
 
-//entry因为有外键约束
+//entry因为有外键约束,所以至少需要生成一个Account
 func TestCreateEntry(t *testing.T) {
 	account := createRandomAccount(t)
 

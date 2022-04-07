@@ -8,8 +8,8 @@ import (
 
 //通过内嵌Queries继承其所有方法,并添加更多方法来支持事务
 type Store struct {
-	*Queries
-	db *sql.DB
+	*Queries //只适用于单次查询
+	db       *sql.DB
 }
 
 //使用db构建Store实例,
@@ -28,7 +28,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	if err != nil {
 		return err
 	}
-	//此处创建的tx,同时也是实现了DBTX的(方法都满足),调用new生成Queries
+	//此处创建的tx,同时也是实现了DBTX的(方法都满足),调用new生成Queries,用于在事务中组合各种单次数据库操作
 	q := New(tx)
 	//现在有了能够再事务中执行操作的Queries
 	//执行事务
@@ -107,7 +107,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		if err != nil {
 			return err
 		}
-
+		//--------------------转账较为复杂,要考虑死锁问题----------------------
 		if arg.FromAccountID < arg.ToAccountID { //确保多个事务都按照相同的顺序执行修改
 			//先修改转出方
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount,

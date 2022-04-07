@@ -40,7 +40,7 @@ func TestCreateAccount(t *testing.T) {
 	createRandomAccount(t)
 }
 
-//测试Get
+//测试Get,注意每个单元测试都要独立,不能依赖其他测试创建的数据,因此都自己创建记录
 func TestGetAccount(t *testing.T) {
 	account1 := createRandomAccount(t)
 
@@ -94,7 +94,7 @@ func TestDeleteAccount(t *testing.T) {
 
 //测试获取列表
 func TestListAccounts(t *testing.T) {
-
+	//创建十个用于测试
 	for i := 0; i < 10; i++ {
 		createRandomAccount(t)
 	}

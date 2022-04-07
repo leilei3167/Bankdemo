@@ -2,11 +2,8 @@ package util
 
 import (
 	"math/rand"
-	"strings"
 	"time"
 )
-
-const alp = "abcdefghijklmnopqrstuvwxyz"
 
 //随机种子
 func init() {
@@ -21,18 +18,26 @@ func RandomInt(min, max int64) int64 {
 
 }
 
+const alp = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
 //随机字符串
 func RandomString(n int) string {
 	//构建字符串生成器
-	var sb strings.Builder
-	k := len(alp)
+	/*	var sb strings.Builder
+		k := len(alp)
 
-	for i := 0; i < n; i++ {
-		c := alp[rand.Intn(k)]
-		//将随机数对应的字母写入到sb中
-		sb.WriteByte(c)
+		for i := 0; i < n; i++ {
+			c := alp[rand.Intn(k)]
+			//将随机数对应的字母写入到sb中
+			sb.WriteByte(c)
+		}
+		return sb.String()*/
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = alp[rand.Int63()%int64(len(alp))]
 	}
-	return sb.String()
+
+	return string(b)
 
 }
 

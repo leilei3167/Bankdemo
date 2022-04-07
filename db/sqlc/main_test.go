@@ -1,5 +1,6 @@
 package db
 
+/*给数据库接口测试提供入口*/
 import (
 	"database/sql"
 	"log"
@@ -12,7 +13,7 @@ import (
 //数据库链接设置为常量
 const (
 	dbDriver = "postgres"
-	dbSource = "postgresql://root:8888@localhost:5432/simple_bank?sslmode=disable"
+	dbSource = "postgresql://root:123456@localhost:5432/bank?sslmode=disable"
 )
 
 var testQueries *Queries
