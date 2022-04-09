@@ -8,10 +8,11 @@ import (
 	db "github.com/leilei3167/bank/db/sqlc"
 )
 
+//构建所需的数据,在此可用binding来验证输入的字段
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,oneof=USD RMB EUR" ` //必须字段
-} //只允许传入owner 和 币种
+} //只允许传入owner 和 币种,余额创建时默认为0
 
 func (server *Server) createAccount(ctx *gin.Context) {
 	var req createAccountRequest
@@ -31,7 +32,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorRespones(err))
 		return
 	}
-	//没有错误即处理完成,返回成功消息
+	//没有错误即处理完成,返回成功消息和account
 	ctx.JSON(http.StatusOK, account)
 
 }
@@ -79,7 +80,7 @@ func (server *Server) ListAccount(ctx *gin.Context) {
 	}
 
 	arg := db.ListAccountsParams{
-		Limit:  req.PageSize,//页面的大小,5-10
+		Limit:  req.PageSize,                    //页面的大小,5-10
 		Offset: (req.PageID - 1) * req.PageSize, //第几页
 	}
 

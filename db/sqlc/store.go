@@ -7,14 +7,20 @@ import (
 )
 
 //通过内嵌Queries继承其所有方法,并添加更多方法来支持事务
-type Store struct {
+type SQLStore struct {
 	*Queries //只适用于单次查询
 	db       *sql.DB
 }
 
+//定义一个接口用于mock,包含之前数据库交互的所有方法
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
 //使用db构建Store实例,
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) *SQLStore {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db), //直接用db New一个Queries
 	}
@@ -22,7 +28,7 @@ func NewStore(db *sql.DB) *Store {
 
 //构建事务操作,传入一个ctx和一个回调函数
 //不希望其他包调用此函数
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	//开始事务,可设置隔离级别(默认读已提交)
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -69,7 +75,7 @@ var txKey = struct{}{}
 //写一个转账的处理,需要传入转账的参数结构体,返回结果结构体
 //创建转账记录,添加account entries,更新account的balance
 
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	//创建一个空的结果
 	var result TransferTxResult
 	//调用

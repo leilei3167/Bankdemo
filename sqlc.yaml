@@ -10,7 +10,7 @@ packages:
     #添加json tag
     emit_json_tags: true
 
-    emit_interface: false
+    emit_interface: true
      #为true则为表设置负数名的结构体
     emit_exact_table_names: false
     emit_empty_slices: true
