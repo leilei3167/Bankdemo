@@ -55,7 +55,7 @@ func RandomMoney() int64 {
 
 //随机币种
 func RandomCurrency() string {
-	currency := []string{"RMB", "USD", "EUR"}
+	currency := []string{RMB, USD, EUR}
 	n := len(currency)
 	//从随机索引中获取
 	return currency[rand.Intn(n)]

@@ -11,7 +11,7 @@ import (
 //构建所需的数据,在此可用binding来验证输入的字段
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD RMB EUR" ` //必须字段
+	Currency string `json:"currency" binding:"required,currency" ` //必须字段
 } //只允许传入owner 和 币种,余额创建时默认为0
 
 func (server *Server) createAccount(ctx *gin.Context) {

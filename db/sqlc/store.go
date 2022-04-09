@@ -78,12 +78,23 @@ var txKey = struct{}{}
 func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	//创建一个空的结果
 	var result TransferTxResult
+
 	//调用
 	err := store.execTx(ctx, func(q *Queries) error {
 		//fn之内为多个语句的组合,任意一个失败都返回err到execTx,并且回滚
+		var err error
+		//TODO:判断转账金额是否大于FromAccount的余额
+		res, err := store.GetAccount(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		}
+		if res.Balance-arg.Amount < 0 {
+			err = fmt.Errorf("FromAccountID:%v余额不足!", arg.FromAccountID)
+			return err
+		}
 
 		//1.用Queries调用创建转账记录的方法,并将结果写入result transfer字段
-		var err error
+
 		txName := ctx.Value(txKey)
 		fmt.Println(txName, "创建Transfer")
 		//引用外部函数变量result,构成闭包

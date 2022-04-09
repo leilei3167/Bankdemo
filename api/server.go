@@ -2,6 +2,8 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	db "github.com/leilei3167/bank/db/sqlc"
 )
 
@@ -15,12 +17,18 @@ type Server struct {
 func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
 	//暂时添加创建的api
 	//传入多个处理器的话中间的是中间件
 	//处理器函数都围绕server结构体构建,因为其中包括了数据库的交互
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount) //:id告诉gin id字段是参数
 	router.GET("/accounts", server.ListAccount)
+	router.POST("/transfer", server.createTransfer)
+
 	server.router = router
 	return server
 
