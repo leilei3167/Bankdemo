@@ -48,7 +48,7 @@ jobs:
           which migrate
 
     - name: Run migrate
-      run: migrate -path db/migration -database "postgresql://root:8888@localhost:5432/simple_bank?sslmode=disable" -verbose up
+      run: migrate -path db/migration -database "postgresql://root:123456@localhost:5432/bank?sslmode=disable" -verbose up
 
 
 
