@@ -28,6 +28,7 @@ func NewServer(store db.Store) *Server {
 	router.GET("/accounts/:id", server.getAccount) //:id告诉gin id字段是参数
 	router.GET("/accounts", server.ListAccount)
 	router.POST("/transfer", server.createTransfer)
+	router.POST("/users", server.createUser)
 
 	server.router = router
 	return server

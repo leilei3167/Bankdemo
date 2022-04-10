@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -59,4 +60,8 @@ func RandomCurrency() string {
 	n := len(currency)
 	//从随机索引中获取
 	return currency[rand.Intn(n)]
+}
+
+func RandomEmail() string {
+	return fmt.Sprintf("%s@qq.com", RandomString(6))
 }

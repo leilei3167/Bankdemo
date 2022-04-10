@@ -13,8 +13,9 @@ import (
 //不会被测试执行
 func createRandomAccount(t *testing.T) Account {
 	//定义要传入的参数
+	user := createRandomUser(t)
 	arg := CreateAccountParams{
-		Owner:    util.RandOwner(),
+		Owner:    user.Username,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
